@@ -16,4 +16,5 @@
 struct msg_buf {
     long mtype;
     char message[MSG_SIZE];
+    pid_t pid;
 };

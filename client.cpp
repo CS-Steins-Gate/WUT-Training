@@ -35,7 +35,7 @@ void* server_read(void* arg) {
             cerr << "\n退出成功\n";
             break;
         }
-        printf("\n信道: %ld, 消息来源(pid): %d, 消息内容: %s\n", buf.mtype, getpid(), buf.message);
+        printf("\n信道: %ld, 消息来源(pid): %d, 消息内容: %s\n", buf.mtype, buf.pid, buf.message);
         cerr << "请输入消息内容 >>>";
     }
 
@@ -46,6 +46,7 @@ void* server_read(void* arg) {
 void* server_write(void* arg) {
     msg_buf snd;
     snd.mtype = 1;
+    snd.pid = getpid();
     string msg;
 
     while (true) {
@@ -82,6 +83,8 @@ int main() {
         perror("msgget");
         exit(-2);
     }
+
+    printf("启动成功, 进程id: %d, 消息队列id: %d\n", getpid(), msgid);
 
     // 创建线程
     if (pthread_create(&tid1, nullptr, server_read, nullptr) != 0) {
