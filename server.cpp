@@ -2,6 +2,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <cstring>
 #include <iostream>
 #include "proto.h"
@@ -34,7 +35,7 @@ void* server_read(void* arg) {
             cerr << "\n退出成功\n";
             break;
         }
-        printf("\n信道: %ld, 消息内容: %s\n", buf.mtype, buf.message);
+        printf("\n信道: %ld, 消息来源(pid): %d, 消息内容: %s\n", buf.mtype, getpid(), buf.message);
         cerr << "请输入消息内容 >>>";
     }
 
@@ -45,19 +46,22 @@ void* server_read(void* arg) {
 void* server_write(void* arg) {
     msg_buf snd;
     snd.mtype = 2;
+    string msg;
 
     while (true) {
-        cerr << "请输入消息内容 >>>";
-        cin >> snd.message;
+        cerr << "请输入消息内容 >>>";      
+        getline(cin, msg);
+        strncpy(snd.message, msg.c_str(), MSG_SIZE - 1);
 
         if (msgsnd(msgid, (void*)&snd, MSG_SZ, 0) < 0) {
             perror("msgsnd");
             return nullptr;
         }
         if (strcasecmp(snd.message, LOGOUT) == 0) {
-            pthread_cancel(tid1);   // 取消读线程
+            pthread_cancel(tid1);  // 取消读线程
             cout << "退出成功\n";
-            while(true);
+            while (true)
+                ;
         }
     }
 
